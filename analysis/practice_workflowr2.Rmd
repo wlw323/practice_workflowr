@@ -1,0 +1,80 @@
+---
+title: "Gene Expression Analysis"
+author: "wlw323"
+date: "`r Sys.Date()`"
+output: 
+  workflowr::wflow_html:
+     toc: false
+editor_options:
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Gene Expression Analysis
+
+This document contains the analysis of gene expression data using Cuffdiff results.
+
+```{r read-data, results='hide'}
+file_path <- "c:/Users/wlw/Desktop/sx/gene_exp.diff"
+cuffdiff_result <- read.table(file = file_path, header = TRUE)
+```
+
+### Calculating Log2 Fold Change and Adjusting for Zero Values
+
+```{r calculate-log2-foldchange, results='hide'}
+wt_FPKM <- cuffdiff_result$value_1
+tre_FPKM <- cuffdiff_result$value_2
+log2_foldchange <- log2(tre_FPKM / wt_FPKM)
+log2_foldchange[tre_FPKM == 0] <- 0
+log2_foldchange[wt_FPKM == 0] <- 0
+```
+
+### Calculating Negative Log10 P-Value
+
+```{r calculate-log10-p-value, results='hide'}
+log10_p_value <- log10(cuffdiff_result$p_value) * -1
+```
+
+### 1st Edition: Displaying the Original Plot
+
+```{r plot-original, fig.width=8, fig.height=6}
+plot(x = log2_foldchange, y = log10_p_value)
+```
+
+### 2nd Edition: Adjusting Plot Limits and Filtering Data Points
+
+```{r plot-filtered, fig.width=8, fig.height=6}
+log10_p_value.filter <- log10_p_value[log10_p_value >= 0.001]
+log2_foldchange.filter <- log2_foldchange[log10_p_value >= 0.001]
+plot(x = log2_foldchange.filter, y = log10_p_value.filter, 
+     xlim = c(-5, 5), ylim = c(0.225, 4.5))
+```
+
+### 3rd Edition: Coloring the Plot
+
+```{r plot-colored, fig.width=8, fig.height=6}
+# Selecting significant points
+selec_sign_vector <- (cuffdiff_result$value_1 > 0) & (cuffdiff_result$value_2 > 0) &
+                     (cuffdiff_result$value_1 >= 1 | cuffdiff_result$value_2 >= 1) &
+                     (cuffdiff_result$p_value <= 0.05) & (abs(log2_foldchange) >= 1)
+selec_sign_vector.filter <- selec_sign_vector[log10_p_value >= 0.001]
+col_vector <- rep(rgb(0, 0, 1, 0.1), length(log10_p_value.filter))
+col_vector[selec_sign_vector.filter] <- rgb(1, 0, 0)
+
+# Filtering for plot
+log10_p_value.filter <- log10_p_value[log10_p_value >= 0.001]
+log2_foldchange.filter <- log2_foldchange[log10_p_value >= 0.001]
+plot(x = log2_foldchange.filter, y = log10_p_value.filter,
+     xlim = c(-4, 4), ylim = c(0.001, 4.5), col = col_vector, pch = 16)
+
+# Adding horizontal line at -log10(0.05)
+abline(h = -1 * log10(0.05), lwd = 3, lty = 3, col = "#4C5B61")
+```
+
+This document provides a step-by-step analysis of gene expression data, including data filtering, calculation of log2 fold change, and visualization of the results with significant points highlighted.
+```
+
+
