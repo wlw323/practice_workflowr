@@ -9,6 +9,8 @@ navbar:
     href: about.html
   - text: License
     href: license.html
+  - text: Volcano plot
+    href: practice_workflowr2.html
   right:
   - icon: fab fa-github
     text: Source code
@@ -19,3 +21,5 @@ output:
     toc_float: yes
     theme: cosmo
     highlight: textmate
+
+    
