@@ -9,3 +9,4 @@ editor_options:
 ---
 
 Welcome to my research website.
+Click on this [link](practice_workflowr2.html) to see my result.
